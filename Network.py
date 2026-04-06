@@ -265,15 +265,16 @@ class Client:
         self.router_queue = []
         self.router_cursor = 0
         self.recv_queue = []
+        self.tls_context = ssl.create_default_context()
         if ca_cert:
-            self.tls_context.load_verify_locations(cafile="CA_cert.pem")
+            self.tls_context.load_verify_locations(cafile=ca_cert)
         else:
-            self.tls_context = ssl.create_default_context()
             self.tls_context.check_hostname = False
             self.tls_context.verify_mode = ssl.CERT_NONE
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self._sock.bind((self.client_ip, self.client_port))
+
         try:
             self._sock.connect((self.server_ip, self.server_port))
         except:exit('Server not ready')

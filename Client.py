@@ -49,7 +49,7 @@ try:
     if sport<1024:sport=''
     if sport>65535:sport=''
 except:sport=''
-if not sport:sport=7443
+if not sport:sport=8443
 client = Network.Client(client_ip=IP,client_port=cport,server_ip=sip,server_port=sport)
 username = input('Username: ')
 password = util.str_to_bytes(enc.hash_password(username + getpass.getpass()))
@@ -66,18 +66,18 @@ def request(request_type: bytes, **kwargs):
     global request_num
     try:
         request_num+=1
-        print('\r\033[K' + f'Auth for request # {request_num} Request type: {request_type}', end='', flush=True)
+        print(f'Auth for request # {request_num} Request type: {request_type}')
         client.send(request_type, PICKLE=False)
         TID=client.threads[-1]
         key_data=enc.gen_key_bytes()
         resp=client.recv(TID)
-        if not enc.verify(CA[0],resp['msg'],resp['sign']):print('\r\033[K', end='', flush=True);return
+        if not enc.verify(CA[0],resp['msg'],resp['sign']):return
         skey_data=resp['msg']
         client.send(key_data['public']+skey_data[:32]+skey_data[32:],TID,False)
         aes_key=enc.create_aes_key(key_data['private'],skey_data[:32],skey_data[32:])
         data=client.recv(TID)
         token=enc.aes_decrypt(aes_key,data['msg'])
-        if not enc.verify(CA[0],data['msg'],data['sign']):print('\r\033[K', end='', flush=True);return
+        if not enc.verify(CA[0],data['msg'],data['sign']):return
         client.send(username,TID,False)
         _=enc.sign(prv_key,token)
         _=enc.aes_encrypt(aes_key,_)
@@ -87,29 +87,28 @@ def request(request_type: bytes, **kwargs):
         if resp==b'2':
             client.send(enc.aes_encrypt(aes_key,pub_key),TID,False)
             resp=client.recv(TID,False)
-            if resp==b'0':print('\r\033[K', end='', flush=True);return
+            if resp==b'0':return
         # process request
-        print('\r\033[K' + f'Processing request # {request_num} Request type: {request_type}', end='', flush=True)
+        print(f'Processing request # {request_num} Request type: {request_type}')
         if request_type==b'JSON':
             out=[]
             while True:
                 data=client.recv(TID,timeout=30)
                 if not data:break
-                if not enc.verify(CA[0],data['msg'],data['sign']):print('\r\033[K', end='', flush=True);return
+                if not enc.verify(CA[0],data['msg'],data['sign']):return
                 out.append(data['msg'])
                 if data['end']:break
             for x in range(len(out)):out[x]=util.bytes_to_str(enc.aes_decrypt(aes_key,out[x]))
             out=Network.deserialize(''.join(out))
-            print('\r\033[K', end='', flush=True)
             if not isinstance(out,dict):return
             return out
         if request_type==b'DOWN':
             path=kwargs['path']
-            print('\r\033[K' + f'Processing request # {request_num} Request type: {request_type} Path: {path[-25:]}', end='', flush=True)
-            if client.recv(TID,False,timeout=30)!=b'1':print('\r\033[K', end='', flush=True);return
+            print(f'Processing request # {request_num} Request type: {request_type} Path: {path[-25:]}')
+            if client.recv(TID,False,timeout=30)!=b'1':return
             client.send(enc.aes_encrypt(aes_key,util.str_to_bytes(path.replace(os.sep,'/'))),TID,False)
             data=client.recv(TID,timeout=30)
-            if not enc.verify(CA[0],data['msg'],data['sign']):print('\r\033[K', end='', flush=True);return
+            if not enc.verify(CA[0],data['msg'],data['sign']):return
             Hash=enc.aes_decrypt(aes_key,data['msg'])
             out=b''
             while True:
@@ -127,11 +126,11 @@ def request(request_type: bytes, **kwargs):
                     os.replace(path+'.tmp',path)
         if request_type == b'UP':
             path = kwargs['path']
-            print('\r\033[K' + f'Processing request # {request_num} Request type: {request_type} Path: {path[-25:]}', end='', flush=True)
+            print(f'Processing request # {request_num} Request type: {request_type} Path: {path[-25:]}')
             try:
                 with open(SHARED+os.sep+path,'rb') as f:data=f.read()
             except:data=b''
-            if client.recv(TID, False, timeout=30) != b'1':print('\r\033[K', end='', flush=True);return
+            if client.recv(TID, False, timeout=30) != b'1':return
             client.send(enc.aes_encrypt(aes_key, util.str_to_bytes(path.replace(os.sep,'/'))), TID, False)
             file_hash = hashlib.sha512(data).digest()
             msg = enc.aes_encrypt(aes_key, file_hash)
@@ -145,14 +144,18 @@ def request(request_type: bytes, **kwargs):
                 client.send(enc_chunk, TID, False)
     except Exception as e:traceback.print_exception(e)
 while not Watcher.READY:time.sleep(5)
-pool = ThreadPoolExecutor(max_workers=5)
 request_num=0
 request(b'auth')
 DELETED = ''
 last_index = None
 last_activity = 0
-
-while True:
+def GUI():
+    print('GUI')
+    import Explorer
+    Explorer.MAIN()
+gui_thread=threading.Thread(target=GUI,daemon=True)
+gui_thread.start()
+while gui_thread.is_alive():
     local_index = Watcher.INDEX()
     remote_index = request(b'JSON')
     state = (tuple(local_index.items()), tuple(remote_index.items()))
@@ -181,3 +184,4 @@ while True:
         if local_ts > remote_ts:request(b'UP',path=path)
         else:request(b'DOWN',path=path)
     time.sleep(2.5)
+os._exit(3)

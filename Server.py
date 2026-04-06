@@ -1,4 +1,4 @@
-import Watcher, time, Network, os, Encryption, shutil, util, getpass, subprocess, hashlib, tempfile, threading, sys
+import Watcher, time, Network, os, Encryption, shutil, util, getpass, subprocess, hashlib, tempfile, threading, sys, socket
 subprocess.run('clear', shell=True)
 enc=Encryption
 DEBUG=False
@@ -141,7 +141,7 @@ if util.test_main('SERVER: MAIN'):
         input('Creating new keys (press enter)')
         CA=create_new_keys()
     else:CA=load_CA(password=util.str_to_bytes(getpass.getpass('CA PASSWORD: ')))
-    server=Network.Server(host_port=8443, max_retries=10, prv_key=ROOT + '/Server - Keys/HTTPS_prv.pem', cert_key=ROOT + '/Server - Keys/HTTPS_cert.pem')
+    server=Network.Server(host_ip=socket.IP,host_port=8443, max_retries=10, prv_key=ROOT + '/Server - Keys/HTTPS_prv.pem', cert_key=ROOT + '/Server - Keys/HTTPS_cert.pem')
     PW=dict()
     for x in os.listdir(ROOT + '/Server - Keys/Client - Keys'):
         try:
