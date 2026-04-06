@@ -24,7 +24,31 @@ except:
     shutil.copy2(path + os.sep + 'CA_pub.pem',ROOT + os.sep + 'Client - Keys' + os.sep + 'CA_pub.pem')
     shutil.copy2(path + os.sep + 'CA_cert.pem',ROOT + os.sep + 'Client - Keys' + os.sep + 'CA_cert.pem')
     CA = [enc.load_key(ROOT + os.sep + 'Client - Keys' + os.sep + 'CA_pub.pem'),enc.load_key(ROOT + os.sep + 'Client - Keys' + os.sep + 'CA_cert.pem')]
-client = Network.Client(client_ip=socket.IP,client_port=7443,server_ip=socket.IP,server_port=8443)
+IP=None
+for x in socket.getaddrinfo(socket.gethostname(), None):
+    _ip = x[4][0]
+    if x[0] != socket.AF_INET:continue
+    if _ip.startswith("127."):continue
+    IP = _ip;break
+ip=input(f'Client IP (defualt is {IP})')
+if ip:IP=ip
+sip=input(f'Server IP (defualt is loopback {IP}): ')
+if not sip:sip=IP
+cport=input('Client port (defualt is 7443): ')
+try:
+    cport=int(cport)
+    if cport<1024:cport=''
+    if cport>65535:cport=''
+except:cport=''
+if not cport:cport=7443
+sport=input('Server port (defualt is 8443): ')
+try:
+    sport=int(sport)
+    if sport<1024:sport=''
+    if sport>65535:sport=''
+except:sport=''
+if not sport:sport=7443
+client = Network.Client(client_ip=IP,client_port=cport,server_ip=sip,server_port=sport)
 username = input('Username: ')
 password = util.str_to_bytes(enc.hash_password(username + getpass.getpass()))
 try:

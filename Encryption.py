@@ -1,6 +1,6 @@
-from cryptography.x509 import load_der_x509_certificate, load_pem_x509_certificate, Name, NameAttribute, CertificateBuilder, random_serial_number, BasicConstraints, SubjectAlternativeName, DNSName, ExtendedKeyUsageOID, ExtendedKeyUsage
+from cryptography.x509 import load_der_x509_certificate, load_pem_x509_certificate, Name, NameAttribute, CertificateBuilder, random_serial_number, BasicConstraints
 from cryptography.hazmat.primitives.serialization import load_der_private_key, load_der_public_key, load_pem_private_key, load_pem_public_key
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric import x25519, ed25519
 import argon2.low_level, os, threading, util, collections, warnings
 from cryptography.hazmat.primitives import hashes, serialization

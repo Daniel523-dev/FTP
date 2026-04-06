@@ -1,4 +1,4 @@
-import random, string, hashlib, pickle, typing, util, socket, threading, psutil, time, traceback, multiprocessing, ssl, queue, collections, base64
+import random, string, hashlib, pickle, typing, util, socket, threading, psutil, time, traceback, ssl, queue, collections, base64
 def GENERAL_DELAY():
     return psutil.cpu_percent(interval=None)/4000
 HASH_SIZE=-1
@@ -11,7 +11,12 @@ ID_LEN = 64
 HASH_SIZE = len(hash_hex(b''))
 CHUNK_SIZE = 65536
 DEFAULT_MAX_RETRIES = 10
-DEFAULT_IP = socket.IP
+DEFAULT_IP = None
+for x in socket.getaddrinfo(socket.gethostname(), None):
+    _ip = x[4][0]
+    if x[0] != socket.AF_INET:continue
+    if _ip.startswith("127."):continue
+    DEFAULT_IP = _ip;break
 LOCKS=dict()
 def gen_ID() -> str:
     return ''.join(random.choices(string.ascii_letters + string.digits, k=ID_LEN))
@@ -78,7 +83,7 @@ class Server:
             client_sock.setblocking(False)
             CID = gen_ID()
             self.clients[CID] = client_sock
-            self.SEND_LOCK[CID] = multiprocessing.RLock()
+            self.SEND_LOCK[CID] = threading.RLock()
     def recv_all(self):
         buffers = {}
         while True:
@@ -255,7 +260,7 @@ class Client:
         self.sock = None
         self.cont_queue = {}
         self.cont_queue_time = {}
-        self.SEND_LOCK = multiprocessing.RLock()
+        self.SEND_LOCK = threading.RLock()
         self.status = {}
         self.router_queue = []
         self.router_cursor = 0
