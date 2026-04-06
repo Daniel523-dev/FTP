@@ -18,7 +18,9 @@ Resetting keys deletes all existing client registrations on the server.
 - Client re-sync: can max out a CPU core on both machines (client + server)
 
 Re-sync operations are CPU-intensive and will heavily load both systems.
-
+## Compatibility Warning
+ - Server.py is designed for fedora linux, and WILL NOT WORK ON WINDOWS
+ - Client.py is primarily designed for linux, but should work on Windows
 ## 🔐 Security Overview
 
 - After AES session key generation, **all communication is encrypted end-to-end**.
