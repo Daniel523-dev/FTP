@@ -127,4 +127,4 @@ Client:
 - Client identity verified using Ed25519 signatures
 - Server enforces authentication and requires admin approval for each new client connection
 - File integrity ensured using SHA-512 hashing
-- Client password never reaches the server and is exclusivly used to encrypt the client private identity key
+- Client passwords are never sent to the server. They remain strictly local and are used solely to encrypt the client’s private Ed25519 signing key used during authentication.
