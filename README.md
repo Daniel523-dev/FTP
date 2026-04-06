@@ -6,7 +6,9 @@ Bidirectionally synchronizes ```~/Shared - Server``` (server-side) with ```~/Sha
 ---
 Server keys can be reset by running the server with the ```--new``` flag. This process also initializes ```~/ClientData```.
 To update the client-side server key store, the client must be started with ```--new```, which prompts for the path to the ClientData archive.
+
 The ```ClientData``` archive is typically 1 to 2 Kb and never contains sensitive information.
+
 Resetting keys deletes all existing client registrations on the server.
 
 ## ⚠️ Performance Warning
