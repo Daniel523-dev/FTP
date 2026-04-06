@@ -7,7 +7,7 @@ enc=Encryption
 DEBUG=True
 ROOT=os.path.expanduser('~')
 SHARED = ROOT + os.sep + 'Shared - Client'
-threading.Thread(target=Watcher.main,kwargs={'PATH': SHARED, 'cache_file': '.client_index'}).start()
+threading.Thread(target=Watcher.main,kwargs={'PATH': SHARED, 'cache_file': f'{ROOT}{os.sep}.client_index'}).start()
 try:
     if '--new' in sys.argv:raise Exception
     CA = [enc.load_key(ROOT + os.sep + 'Client - Keys' + os.sep + 'CA_pub.pem'),enc.load_key(ROOT + os.sep + 'Client - Keys' + os.sep + 'CA_cert.pem')]

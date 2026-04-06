@@ -4,6 +4,12 @@ enc=Encryption
 DEBUG=False
 ROOT=os.path.expanduser('~')
 SHARED=ROOT + '/Shared - Server'
+IP = None
+for x in socket.getaddrinfo(socket.gethostname(), None):
+    _ip = x[4][0]
+    if x[0] != socket.AF_INET:continue
+    if _ip.startswith("127."):continue
+    IP = _ip;break
 def create_new_keys():
     root = ROOT + '/Server - Keys'
     shutil.rmtree(root, ignore_errors=True)
@@ -141,7 +147,7 @@ if util.test_main('SERVER: MAIN'):
         input('Creating new keys (press enter)')
         CA=create_new_keys()
     else:CA=load_CA(password=util.str_to_bytes(getpass.getpass('CA PASSWORD: ')))
-    server=Network.Server(host_ip=socket.IP,host_port=8443, max_retries=10, prv_key=ROOT + '/Server - Keys/HTTPS_prv.pem', cert_key=ROOT + '/Server - Keys/HTTPS_cert.pem')
+    server=Network.Server(host_ip=IP,host_port=8443, max_retries=10, prv_key=ROOT + '/Server - Keys/HTTPS_prv.pem', cert_key=ROOT + '/Server - Keys/HTTPS_cert.pem')
     PW=dict()
     for x in os.listdir(ROOT + '/Server - Keys/Client - Keys'):
         try:
